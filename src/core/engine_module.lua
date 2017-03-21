@@ -300,6 +300,7 @@ local function engine_process_file(e, expression, op, infilename, outfilename, e
    -- (below) in cases where there are many lines to process.
    local rmatch_encoder, fn_encoder = common.lookup_encoder(encoder)
    local peg = r.pattern.peg			    -- optimization
+   peg.compile(peg);
    local matcher = function(input)
 		      return rmatch(peg, input, 1, rmatch_encoder, fn_encoder)
 		   end                              -- FUTURE: inline this for performance
@@ -348,6 +349,8 @@ local function engine_process_file(e, expression, op, infilename, outfilename, e
       inlines = inlines + 1
       l = nextline(); 
    end -- while
+   local cleanup = peg.cleanup
+   cleanup();
    infile:close(); outfile:close(); errfile:close();
    return inlines, outlines, errlines
 end
