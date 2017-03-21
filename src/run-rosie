@@ -51,6 +51,6 @@ if [[ ! -r $CLI ]]; then
     >&2 echo "Loading rosie from source"
 fi
 
-${executable} $i "$CLI" "$ROSIE_COMMAND" "$ROSIE_HOME" "$dev" "$@"
+$XDEBUGX ${executable} $i "$CLI" "$ROSIE_COMMAND" "$ROSIE_HOME" "$dev" "$@"
 
 
