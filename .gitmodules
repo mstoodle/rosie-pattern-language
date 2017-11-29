@@ -6,7 +6,8 @@
 	url = https://github.com/jamiejennings/lua-cjson.git
 [submodule "submodules/rosie-lpeg"]
 	path = submodules/rosie-lpeg
-	url = https://github.com/jamiejennings/rosie-lpeg.git
+	url = https://github.com/mstoodle/rosie-lpeg.git
+	branch = experimental_omrjit
 [submodule "submodules/argparse"]
 	path = submodules/argparse
 	url = https://github.com/mpeterv/argparse.git
@@ -22,3 +23,4 @@
 [submodule "submodules/omr"]
 	path = submodules/omr
 	url = https://github.com/eclipse/omr
+	branch = master
