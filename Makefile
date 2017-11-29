@@ -386,6 +386,30 @@ test:
 		echo "To enable, set CLIENTS=all or CLIENTS=\"c python\" or such (space separated list in quotes)."; \
 	fi
 
+.PHONY: testwithjit
+testwithjit:
+	@echo "Running tests with --jit (default match count) in test/all.lua"
+	@(TERM="dumb"; TR_Options="verbose={compilePerformance},vlog=vlog.testwithjit"; echo "dofile \"$(BUILD_ROOT)/test/all.lua\"" | $(ROSIEBIN) -D --jit)
+	@if [ -n "$(CLIENTS)" ]; then \
+		echo "** Running librosie client tests **"; \
+		cd $(LIBROSIE_DIR) && $(MAKE) test; \
+	else \
+		echo "Skipping librosie client tests."; \
+		echo "To enable, set CLIENTS=all or CLIENTS=\"c python\" or such (space separated list in quotes)."; \
+	fi
+
+.PHONY: testwithjit0
+testwithjit0:
+	@echo Running tests with --jit --jitmatchcount 0 in test/all.lua
+	@(TERM="dumb"; TR_Options="verbose={compilePerformance},vlog=vlog.testwithjit0"; echo "dofile \"$(BUILD_ROOT)/test/all.lua\"" | $(ROSIEBIN) -D --jit --jitmatchcount 0)
+	@if [ -n "$(CLIENTS)" ]; then \
+		echo "** Running librosie client tests **"; \
+		cd $(LIBROSIE_DIR) && $(MAKE) test; \
+	else \
+		echo "Skipping librosie client tests."; \
+		echo "To enable, set CLIENTS=all or CLIENTS=\"c python\" or such (space separated list in quotes)."; \
+	fi
+
 .PHONY: installtest
 installtest:
 	@echo Running tests in $(BUILD_ROOT)/test/all.lua
@@ -397,8 +421,3 @@ installtest:
 		echo "Skipping librosie client tests."; \
 		echo "To enable, set CLIENTS=all or CLIENTS=\"c python\" or such (space separated list in quotes)."; \
 	fi
-
-
-testwithjit:
-	@echo Running tests in test/all.lua with JIT compiler
-	echo "rosie=\"$(EXECROSIE)\"; dofile \"$(HOME)/test/all.lua\"" | $(EXECROSIE) -D -jit -jitmatchcount 0
