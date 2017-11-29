@@ -19,3 +19,6 @@
 [submodule "luafilesystem/luafilesystem"]
 	path = submodules/luafilesystem
 	url = https://github.com/keplerproject/luafilesystem.git
+[submodule "submodules/omr"]
+	path = submodules/omr
+	url = https://github.com/eclipse/omr
