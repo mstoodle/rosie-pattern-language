@@ -61,6 +61,20 @@ function p.create(rosie)
    :args(1) -- consume argument after option
    :target("encoder")
    
+   parser:flag("--jit", "Load and use experimental JIT compiler to speed up pattern matching")
+   :default(false)
+   :action("store_true")
+
+   parser:option("--jitmatchcount", "Set JIT compiler match count threshold: patterns matched this many times will be JIT compiled")
+   :args(1)
+   :default(1)
+   :target("jitmatchcount")				    -- args.jitmatchcount
+
+   parser:option("--jitsizelimit", "Set JIT compiler bytecode size limit: only patterns with fewer bytecodes will be JIT compiled")
+   :args(1)
+   :default(3000)
+   :target("jitsizelimit")				    -- args.jitsizelimit
+
    -- target variable for commands
    parser:command_target("command")
    local cmd_help = parser:command("help")

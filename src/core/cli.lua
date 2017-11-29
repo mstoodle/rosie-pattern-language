@@ -137,6 +137,16 @@ local function run(args)
    -- Do this BEFORE creating the CL_ENGINE
    if args.libpath then rosie.set_libpath(args.libpath, "cli"); end
 
+   local args = parser:parse()
+   if args.jit then
+     local libpath = rosie.config().ROSIE_HOME.."/lib"
+     local rc = lpeg.loadJit(libpath, args.jitsizelimit, args.jitmatchcount)
+     if rc ~= 0 then
+       error("Could not load JIT: check LD_LIBRARY_PATH / DYLD_LIBRARY_PATH?")
+       os.exit()
+     end
+   end
+
    ok, msg = pcall(create_cl_engine, args)
    if not ok then print("Error when creating cli engine: " .. msg); os.exit(-1); end
 

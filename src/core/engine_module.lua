@@ -349,8 +349,6 @@ local function engine_process_file(e, expression, op, infilename, outfilename, e
       inlines = inlines + 1
       l = nextline(); 
    end -- while
-   local cleanup = peg.cleanup
-   cleanup();
    infile:close(); outfile:close(); errfile:close();
    return inlines, outlines, errlines
 end

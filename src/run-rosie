@@ -51,6 +51,5 @@ if [[ ! -r $CLI ]]; then
     >&2 echo "Loading rosie from source"
 fi
 
+export LD_LIBRARY_PATH=${home}/lib:$LD_LIBRARY_PATH
 $XDEBUGX ${executable} $i "$CLI" "$ROSIE_COMMAND" "$ROSIE_HOME" "$dev" "$@"
-
-

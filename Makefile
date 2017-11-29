@@ -22,6 +22,7 @@ ARGPARSE = argparse
 LUA = lua
 LPEG = rosie-lpeg
 JSON = lua-cjson
+OMR = omr
 READLINE = lua-readline
 LUAMOD = lua-modules
 
@@ -68,6 +69,7 @@ BUILD_LUA_PACKAGE = $(BUILD_ROOT)/rosie.lua
 LUA_DIR = $(SUBMOD_DIR)/$(LUA)
 LPEG_DIR = $(SUBMOD_DIR)/$(LPEG)
 JSON_DIR = $(SUBMOD_DIR)/$(JSON)
+OMR_DIR = $(SUBMOD_DIR)/$(OMR)
 READLINE_DIR = $(SUBMOD_DIR)/$(READLINE)
 LUAMOD_DIR = $(SUBMOD_DIR)/$(LUAMOD)
 LIBROSIE_DIR = $(BUILD_ROOT)/src/librosie
@@ -85,6 +87,7 @@ clean:
 	-cd $(LUA_DIR) && make clean
 	-cd $(LPEG_DIR)/src && make clean
 	-cd $(JSON_DIR) && make clean
+	-cd $(OMR_DIR)/jitbuilder && make clean
 	-cd $(READLINE_DIR) && rm -f readline.so && rm -f src/lua_readline.o
 	-cd $(LIBROSIE_DIR) && make clean
 	rm -f $(submodule_sentinel)
@@ -115,7 +118,7 @@ readlinetest:
 macosx: PLATFORM=macosx
 macosx: CC=cc
 macosx: CJSON_MAKE_ARGS += CJSON_LDFLAGS="-bundle -undefined dynamic_lookup"
-macosx: bin/lua lib/lpeg.so lib/cjson.so lib/readline.so librosie.so compile sniff
+macosx: bin/lua lib/lpeg.so lib/lpjit.so lib/cjson.so lib/readline.so librosie.so compile sniff
 
 .PHONY: linux
 linux: PLATFORM=linux
@@ -123,7 +126,7 @@ linux: CC=gcc
 linux: CJSON_MAKE_ARGS+=CJSON_CFLAGS+=-std=gnu99
 linux: CJSON_MAKE_ARGS+=CJSON_LDFLAGS=-shared
 linux: LINUX_CFLAGS=MYCFLAGS=-fPIC
-linux: readlinetest bin/lua lib/lpeg.so lib/cjson.so lib/readline.so librosie.so compile sniff
+linux: readlinetest bin/lua lib/lpeg.so lib/lpjit.so lib/cjson.so lib/readline.so librosie.so compile sniff
 
 .PHONY: windows
 windows:
@@ -155,14 +158,34 @@ $(LUA_DIR)/src/lua: $(submodules)
 bin/luac: bin/lua
 	cp $(LUA_DIR)/src/luac bin
 
+jitbuilder_lib=$(OMR_DIR)/jitbuilder/release/libjitbuilder.a
+lib/libjitbuilder.a: $(jitbuilder_lib)
+	mkdir -p lib
+	cp $(jitbuilder_lib) lib
+
+$(jitbuilder_lib): $(submodules)
+	cd $(OMR_DIR) && ./configure
+	cd $(OMR_DIR)/jitbuilder && make
+
 lpeg_lib=$(LPEG_DIR)/src/lpeg.so
 lib/lpeg.so: $(lpeg_lib)
 	mkdir -p lib
 	cp $(lpeg_lib) lib
 
-$(lpeg_lib): $(submodules) 
+# Slightly odd: platform make target below actually builds both lpeg.so and lpjit.so
+$(lpeg_lib): $(submodules) $(jitbuilder_lib)
 	cd $(LPEG_DIR)/src && $(MAKE) $(PLATFORM) CC=$(CC) LUADIR=../../$(LUA)
 	@$(BUILD_ROOT)/src/build_info.sh "lpeg" $(BUILD_ROOT) $(CC) >> $(BUILD_ROOT)/build.log
+
+lpjit_lib=$(LPEG_DIR)/src/lpjit.so
+lib/lpjit.so: $(lpjit_lib)
+	mkdir -p lib
+	cp $(lpjit_lib) lib
+
+# Slightly odd: platform make target below actually builds both lpeg.so and lpjit.so
+$(lpjit_lib): $(submodules) $(jitbuilder_lib)
+	cd $(LPEG_DIR)/src && $(MAKE) $(PLATFORM) CC=$(CC) LUADIR=../../lua
+	@$(BUILD_ROOT)/src/build_info.sh "lpjit" $(BUILD_ROOT) $(CC) >> $(BUILD_ROOT)/build.log
 
 json_lib=$(JSON_DIR)/cjson.so
 lib/cjson.so: $(json_lib) 
@@ -376,3 +399,6 @@ installtest:
 	fi
 
 
+testwithjit:
+	@echo Running tests in test/all.lua with JIT compiler
+	echo "rosie=\"$(EXECROSIE)\"; dofile \"$(HOME)/test/all.lua\"" | $(EXECROSIE) -D -jit -jitmatchcount 0
